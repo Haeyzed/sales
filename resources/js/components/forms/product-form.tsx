@@ -103,7 +103,7 @@ export function ProductForm({
     taxes,
     warehouses,
     productsWithoutVariant = [],
-    productsWithVariant = [],
+    // productsWithVariant = [],
     customFields = [],
     onSubmit,
     onCancel,
@@ -297,7 +297,7 @@ export function ProductForm({
                         <div className="space-y-2">
                             <Label htmlFor="type">Product Type *</Label>
                             <Combobox
-                                options={PRODUCT_TYPES}
+                                options={[...PRODUCT_TYPES]}
                                 value={data.type}
                                 onValueChange={(value) => {
                                     setData("type", value)
@@ -346,7 +346,7 @@ export function ProductForm({
                         <div className="space-y-2">
                             <Label htmlFor="barcode_symbology">Barcode Symbology *</Label>
                             <Combobox
-                                options={BARCODE_SYMBOLOGIES}
+                                options={[...BARCODE_SYMBOLOGIES]}
                                 value={data.barcode_symbology}
                                 onValueChange={(value) => setData("barcode_symbology", value)}
                                 placeholder="Select barcode symbology"
@@ -739,7 +739,7 @@ export function ProductForm({
                         <div className="space-y-2">
                             <Label htmlFor="tax_method">Tax Method</Label>
                             <Combobox
-                                options={TAX_METHODS}
+                                options={[...TAX_METHODS]}
                                 value={data.tax_method}
                                 onValueChange={(value) => setData("tax_method", value)}
                                 placeholder="Select tax method"
@@ -799,7 +799,7 @@ export function ProductForm({
                                     className="flex-1"
                                 />
                                 <Combobox
-                                    options={WARRANTY_GUARANTEE_TYPES}
+                                    options={[...WARRANTY_GUARANTEE_TYPES]}
                                     value={data.guarantee_type}
                                     onValueChange={(value) => setData("guarantee_type", value)}
                                     placeholder="Select type"
@@ -1150,6 +1150,7 @@ export function ProductForm({
                                             value={field.default_value || undefined}
                                             onChange={(date) => {
                                                 // Handle date change
+                                                console.log(date)
                                             }}
                                             placeholder="Select date"
                                         />
