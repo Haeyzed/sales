@@ -191,9 +191,9 @@ export function TiptapEditor({
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => editor.chain().focus().toggleStrikethrough().run()}
-                        disabled={!editor.can().chain().focus().toggleStrikethrough().run()}
-                        className={cn(editor.isActive("strikethrough") && "bg-muted")}
+                        onClick={() => editor.chain().focus().toggleStrike().run()}
+                        disabled={!editor.can().chain().focus().toggleStrike().run()}
+                        className={cn(editor.isActive("strike") && "bg-muted")}
                     >
                         <Strikethrough className="h-4 w-4" />
                     </Button>
