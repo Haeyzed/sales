@@ -28,7 +28,7 @@ export type Product = {
     unit: string;
     price: number;
     cost: number;
-    stock_worth: string;
+    stockWorth: string;
 };
 
 export const columns: ColumnDef<Product>[] = [
@@ -63,9 +63,7 @@ export const columns: ColumnDef<Product>[] = [
         ),
         cell: ({ row }) => {
             const product = row.original;
-            const imageUrl = product.image && product.image !== 'zummXD2dvAtI.png'
-                ? `/images/product/small/${product.image}`
-                : '/images/zummXD2dvAtI.png';
+            const imageUrl = product.image || '/images/zummXD2dvAtI.png';
 
             return (
                 <div className="flex items-center gap-3">
@@ -138,10 +136,10 @@ export const columns: ColumnDef<Product>[] = [
         },
     },
     {
-        accessorKey: 'stock_worth',
+        accessorKey: 'stockWorth',
         header: () => <div className="text-right">Stock Worth</div>,
         cell: ({ row }) => {
-            return <div className="text-right text-sm text-muted-foreground">{row.getValue('stock_worth')}</div>;
+            return <div className="text-right text-sm text-muted-foreground">{row.getValue('stockWorth')}</div>;
         },
     },
     {

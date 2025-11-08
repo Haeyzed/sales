@@ -294,6 +294,7 @@ export function ProductForm({
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-2">
+                        {/* 1. Product Type */}
                         <div className="space-y-2">
                             <Label htmlFor="type">Product Type *</Label>
                             <Combobox
@@ -311,6 +312,7 @@ export function ProductForm({
                             <InputError message={errors.type} />
                         </div>
 
+                        {/* 2. Product Name */}
                         <div className="space-y-2">
                             <Label htmlFor="name">Product Name *</Label>
                             <Input
@@ -322,13 +324,15 @@ export function ProductForm({
                             <InputError message={errors.name} />
                         </div>
 
+                        {/* 3. Product Code */}
                         <div className="space-y-2">
-                            <Label htmlFor="code">Product Code</Label>
+                            <Label htmlFor="code">Product Code *</Label>
                             <div className="flex gap-2">
                                 <Input
                                     id="code"
                                     value={data.code}
                                     onChange={(e) => setData("code", e.target.value)}
+                                    required
                                 />
                                 <Button
                                     type="button"
@@ -343,6 +347,7 @@ export function ProductForm({
                             <InputError message={errors.code} />
                         </div>
 
+                        {/* 4. Barcode Symbology */}
                         <div className="space-y-2">
                             <Label htmlFor="barcode_symbology">Barcode Symbology *</Label>
                             <Combobox
@@ -354,6 +359,7 @@ export function ProductForm({
                             <InputError message={errors.barcode_symbology} />
                         </div>
 
+                        {/* 5. Attach File (for digital) */}
                         {data.type === "digital" && (
                             <div className="space-y-2">
                                 <Label htmlFor="file">Attach File *</Label>
@@ -370,6 +376,51 @@ export function ProductForm({
                             </div>
                         )}
 
+                        {/* 7. Brand */}
+                        <div className="space-y-2">
+                            <Label htmlFor="brand_id">Brand</Label>
+                            <div className="flex gap-2">
+                                <div className="flex-1">
+                                    <Combobox
+                                        options={[
+                                            { value: "", label: "None" },
+                                            ...brands.map((brand) => ({
+                                                value: brand.id.toString(),
+                                                label: brand.title,
+                                            })),
+                                        ]}
+                                        value={data.brand_id}
+                                        onValueChange={(value) => setData("brand_id", value)}
+                                        placeholder="Select brand"
+                                    />
+                                </div>
+                                <ResponsiveDialog open={brandDialogOpen} onOpenChange={setBrandDialogOpen}>
+                                    <ResponsiveDialogTrigger asChild>
+                                        <Button type="button" variant="outline" size="icon">
+                                            <Plus className="h-4 w-4" />
+                                        </Button>
+                                    </ResponsiveDialogTrigger>
+                                    <ResponsiveDialogContent>
+                                        <ResponsiveDialogHeader>
+                                            <ResponsiveDialogTitle>Add Brand</ResponsiveDialogTitle>
+                                            <ResponsiveDialogDescription>Create a new brand</ResponsiveDialogDescription>
+                                        </ResponsiveDialogHeader>
+                                        {/* Brand form will be added here */}
+                                        <ResponsiveDialogFooter>
+                                            <ResponsiveDialogClose asChild>
+                                                <Button type="button" variant="outline">
+                                                    Cancel
+                                                </Button>
+                                            </ResponsiveDialogClose>
+                                            <Button type="button">Add Brand</Button>
+                                        </ResponsiveDialogFooter>
+                                    </ResponsiveDialogContent>
+                                </ResponsiveDialog>
+                            </div>
+                            <InputError message={errors.brand_id} />
+                        </div>
+
+                        {/* 8. Category */}
                         <div className="space-y-2">
                             <Label htmlFor="category_id">Category *</Label>
                             <div className="flex gap-2">
@@ -430,54 +481,11 @@ export function ProductForm({
                             </div>
                             <InputError message={errors.category_id} />
                         </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="brand_id">Brand</Label>
-                            <div className="flex gap-2">
-                                <div className="flex-1">
-                                    <Combobox
-                                        options={[
-                                            { value: "", label: "None" },
-                                            ...brands.map((brand) => ({
-                                                value: brand.id.toString(),
-                                                label: brand.title,
-                                            })),
-                                        ]}
-                                        value={data.brand_id}
-                                        onValueChange={(value) => setData("brand_id", value)}
-                                        placeholder="Select brand"
-                                    />
-                                </div>
-                                <ResponsiveDialog open={brandDialogOpen} onOpenChange={setBrandDialogOpen}>
-                                    <ResponsiveDialogTrigger asChild>
-                                        <Button type="button" variant="outline" size="icon">
-                                            <Plus className="h-4 w-4" />
-                                        </Button>
-                                    </ResponsiveDialogTrigger>
-                                    <ResponsiveDialogContent>
-                                        <ResponsiveDialogHeader>
-                                            <ResponsiveDialogTitle>Add Brand</ResponsiveDialogTitle>
-                                            <ResponsiveDialogDescription>Create a new brand</ResponsiveDialogDescription>
-                                        </ResponsiveDialogHeader>
-                                        {/* Brand form will be added here */}
-                                        <ResponsiveDialogFooter>
-                                            <ResponsiveDialogClose asChild>
-                                                <Button type="button" variant="outline">
-                                                    Cancel
-                                                </Button>
-                                            </ResponsiveDialogClose>
-                                            <Button type="button">Add Brand</Button>
-                                        </ResponsiveDialogFooter>
-                                    </ResponsiveDialogContent>
-                                </ResponsiveDialog>
-                            </div>
-                            <InputError message={errors.brand_id} />
-                        </div>
                     </div>
                 </CardContent>
             </Card>
 
-            {/* Units Section */}
+            {/* 9. Units Section */}
             {data.type !== "digital" && data.type !== "service" && (
                 <Card>
                     <CardHeader>
@@ -505,20 +513,6 @@ export function ProductForm({
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="purchase_unit_id">Purchase Unit</Label>
-                                <Combobox
-                                    options={saleUnits.map((unit) => ({
-                                        value: unit.id.toString(),
-                                        label: unit.unit_name,
-                                    }))}
-                                    value={data.purchase_unit_id}
-                                    onValueChange={(value) => setData("purchase_unit_id", value)}
-                                    placeholder="Select unit"
-                                />
-                                <InputError message={errors.purchase_unit_id} />
-                            </div>
-
-                            <div className="space-y-2">
                                 <Label htmlFor="sale_unit_id">Sale Unit</Label>
                                 <Combobox
                                     options={saleUnits.map((unit) => ({
@@ -531,12 +525,26 @@ export function ProductForm({
                                 />
                                 <InputError message={errors.sale_unit_id} />
                             </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="purchase_unit_id">Purchase Unit</Label>
+                                <Combobox
+                                    options={saleUnits.map((unit) => ({
+                                        value: unit.id.toString(),
+                                        label: unit.unit_name,
+                                    }))}
+                                    value={data.purchase_unit_id}
+                                    onValueChange={(value) => setData("purchase_unit_id", value)}
+                                    placeholder="Select unit"
+                                />
+                                <InputError message={errors.purchase_unit_id} />
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
             )}
 
-            {/* Combo Products Section */}
+            {/* 6. Combo Products Section */}
             {data.type === "combo" && (
                 <Card>
                     <CardHeader>
@@ -617,7 +625,7 @@ export function ProductForm({
                 </Card>
             )}
 
-            {/* Pricing & Inventory */}
+            {/* Pricing & Inventory - 10-16 */}
             <Card>
                 <CardHeader>
                     <CardTitle>Pricing & Inventory</CardTitle>
@@ -625,6 +633,7 @@ export function ProductForm({
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-3">
+                        {/* 10. Product Cost */}
                         {data.type !== "digital" && data.type !== "service" && (
                             <div className="space-y-2">
                                 <Label htmlFor="cost">Product Cost *</Label>
@@ -640,6 +649,7 @@ export function ProductForm({
                             </div>
                         )}
 
+                        {/* 11. Product Price */}
                         <div className="space-y-2">
                             <Label htmlFor="price">Product Price *</Label>
                             <Input
@@ -653,6 +663,7 @@ export function ProductForm({
                             <InputError message={errors.price} />
                         </div>
 
+                        {/* 12. Wholesale Price */}
                         <div className="space-y-2">
                             <Label htmlFor="wholesale_price">Wholesale Price</Label>
                             <Input
@@ -665,6 +676,20 @@ export function ProductForm({
                             <InputError message={errors.wholesale_price} />
                         </div>
 
+                        {/* 13. Daily Sale Objective */}
+                        <div className="space-y-2">
+                            <Label htmlFor="daily_sale_objective">Daily Sale Objective</Label>
+                            <Input
+                                id="daily_sale_objective"
+                                type="number"
+                                step="0.01"
+                                value={data.daily_sale_objective}
+                                onChange={(e) => setData("daily_sale_objective", e.target.value)}
+                            />
+                            <InputError message={errors.daily_sale_objective} />
+                        </div>
+
+                        {/* 14. Alert Quantity */}
                         {data.type !== "digital" && data.type !== "service" && (
                             <div className="space-y-2">
                                 <Label htmlFor="alert_quantity">Alert Quantity</Label>
@@ -678,21 +703,10 @@ export function ProductForm({
                                 <InputError message={errors.alert_quantity} />
                             </div>
                         )}
-
-                        <div className="space-y-2">
-                            <Label htmlFor="daily_sale_objective">Daily Sale Objective</Label>
-                            <Input
-                                id="daily_sale_objective"
-                                type="number"
-                                step="0.01"
-                                value={data.daily_sale_objective}
-                                onChange={(e) => setData("daily_sale_objective", e.target.value)}
-                            />
-                            <InputError message={errors.daily_sale_objective} />
-                        </div>
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
+                        {/* 15. Product Tax */}
                         <div className="space-y-2">
                             <Label htmlFor="tax_id">Product Tax</Label>
                             <div className="flex gap-2">
@@ -736,6 +750,7 @@ export function ProductForm({
                             <InputError message={errors.tax_id} />
                         </div>
 
+                        {/* 16. Tax Method */}
                         <div className="space-y-2">
                             <Label htmlFor="tax_method">Tax Method</Label>
                             <Combobox
@@ -755,7 +770,7 @@ export function ProductForm({
                 </CardContent>
             </Card>
 
-            {/* Warranty and Guarantee */}
+            {/* 17-18. Warranty and Guarantee */}
             <Card>
                 <CardHeader>
                     <CardTitle>Warranty & Guarantee</CardTitle>
@@ -763,6 +778,7 @@ export function ProductForm({
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-4 md:grid-cols-2">
+                        {/* 17. Warranty */}
                         <div className="space-y-2">
                             <Label htmlFor="warranty">Warranty</Label>
                             <div className="flex gap-2">
@@ -786,6 +802,7 @@ export function ProductForm({
                             <InputError message={errors.warranty} />
                         </div>
 
+                        {/* 18. Guarantee */}
                         <div className="space-y-2">
                             <Label htmlFor="guarantee">Guarantee</Label>
                             <div className="flex gap-2">
@@ -812,302 +829,7 @@ export function ProductForm({
                 </CardContent>
             </Card>
 
-            {/* Product Options */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Product Options</CardTitle>
-                    <CardDescription>Configure additional product settings</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="space-y-3">
-                        <div className="flex items-center space-x-2">
-                            <Checkbox
-                                id="featured"
-                                checked={data.featured}
-                                onCheckedChange={(checked) => setData("featured", checked as boolean)}
-                            />
-                            <Label htmlFor="featured" className="cursor-pointer">
-                                Featured
-                            </Label>
-                            <p className="text-xs text-muted-foreground">
-                                Featured product will be displayed in POS
-                            </p>
-                        </div>
-
-                        <div className="flex items-center space-x-2">
-                            <Checkbox
-                                id="is_embeded"
-                                checked={data.is_embeded}
-                                onCheckedChange={(checked) => setData("is_embeded", checked as boolean)}
-                            />
-                            <Label htmlFor="is_embeded" className="cursor-pointer">
-                                Embedded Barcode
-                            </Label>
-                            <p className="text-xs text-muted-foreground">
-                                Check this if this product will be used in weight scale machine
-                            </p>
-                        </div>
-
-                        {data.type === "standard" && (
-                            <>
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="is_variant"
-                                        checked={isVariant}
-                                        onCheckedChange={(checked) => setIsVariant(checked as boolean)}
-                                    />
-                                    <Label htmlFor="is_variant" className="cursor-pointer">
-                                        This product has variant
-                                    </Label>
-                                </div>
-
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="is_batch"
-                                        checked={data.is_batch}
-                                        onCheckedChange={(checked) => setData("is_batch", checked as boolean)}
-                                    />
-                                    <Label htmlFor="is_batch" className="cursor-pointer">
-                                        This product has batch and expired date
-                                    </Label>
-                                </div>
-
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="is_imei"
-                                        checked={data.is_imei}
-                                        onCheckedChange={(checked) => setData("is_imei", checked as boolean)}
-                                    />
-                                    <Label htmlFor="is_imei" className="cursor-pointer">
-                                        This product has IMEI or Serial numbers
-                                    </Label>
-                                </div>
-
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="is_diffPrice"
-                                        checked={isDiffPrice}
-                                        onCheckedChange={(checked) => setIsDiffPrice(checked as boolean)}
-                                    />
-                                    <Label htmlFor="is_diffPrice" className="cursor-pointer">
-                                        This product has different price for different warehouse
-                                    </Label>
-                                </div>
-
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="is_initial_stock"
-                                        checked={isInitialStock}
-                                        onCheckedChange={(checked) => setIsInitialStock(checked as boolean)}
-                                    />
-                                    <Label htmlFor="is_initial_stock" className="cursor-pointer">
-                                        Initial Stock
-                                    </Label>
-                                    <p className="text-xs text-muted-foreground">
-                                        This feature will not work for product with variants and batches
-                                    </p>
-                                </div>
-                            </>
-                        )}
-
-                        <div className="flex items-center space-x-2">
-                            <Checkbox
-                                id="promotion"
-                                checked={isPromotion}
-                                onCheckedChange={(checked) => setIsPromotion(checked as boolean)}
-                            />
-                            <Label htmlFor="promotion" className="cursor-pointer">
-                                Add Promotional Price
-                            </Label>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Variant Section */}
-            {isVariant && data.type === "standard" && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Product Variants</CardTitle>
-                        <CardDescription>Configure product variants (e.g., Size, Color)</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {variantOptions.map((variant, index) => (
-                            <div key={index} className="flex gap-2 items-end">
-                                <div className="flex-1 space-y-2">
-                                    <Label>Option * (e.g., Size, Color)</Label>
-                                    <Input
-                                        value={variant.option}
-                                        onChange={(e) => updateVariantOption(index, "option", e.target.value)}
-                                        placeholder="Size, Color etc"
-                                    />
-                                </div>
-                                <div className="flex-1 space-y-2">
-                                    <Label>Value * (comma separated)</Label>
-                                    <Input
-                                        value={variant.value}
-                                        onChange={(e) => updateVariantOption(index, "value", e.target.value)}
-                                        placeholder="Small, Medium, Large"
-                                    />
-                                </div>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => removeVariantOption(index)}
-                                >
-                                    <X className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        ))}
-                        <Button type="button" variant="outline" onClick={addVariantOption}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add More Variant
-                        </Button>
-                    </CardContent>
-                </Card>
-            )}
-
-            {/* Different Prices Section */}
-            {isDiffPrice && data.type === "standard" && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Different Prices for Warehouses</CardTitle>
-                        <CardDescription>Set different prices for different warehouses</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {diffPrices.map((diffPrice, index) => (
-                            <div key={index} className="flex gap-2 items-end">
-                                <div className="flex-1">
-                                    <Label>
-                                        {warehouses.find((w) => w.id.toString() === diffPrice.warehouse_id)?.name}
-                                    </Label>
-                                </div>
-                                <div className="w-48 space-y-2">
-                                    <Label>Price</Label>
-                                    <Input
-                                        type="number"
-                                        step="0.01"
-                                        value={diffPrice.price}
-                                        onChange={(e) => {
-                                            const updated = [...diffPrices]
-                                            updated[index].price = e.target.value
-                                            setDiffPrices(updated)
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        ))}
-                    </CardContent>
-                </Card>
-            )}
-
-            {/* Initial Stock Section */}
-            {isInitialStock && data.type === "standard" && !isVariant && !data.is_batch && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Initial Stock</CardTitle>
-                        <CardDescription>Set initial stock quantities for warehouses</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {initialStocks.map((stock, index) => (
-                            <div key={index} className="flex gap-2 items-end">
-                                <div className="flex-1">
-                                    <Label>
-                                        {warehouses.find((w) => w.id.toString() === stock.warehouse_id)?.name}
-                                    </Label>
-                                </div>
-                                <div className="w-48 space-y-2">
-                                    <Label>Quantity</Label>
-                                    <Input
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        value={stock.qty}
-                                        onChange={(e) => {
-                                            const updated = [...initialStocks]
-                                            updated[index].qty = e.target.value
-                                            setInitialStocks(updated)
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        ))}
-                    </CardContent>
-                </Card>
-            )}
-
-            {/* Promotion Section */}
-            {isPromotion && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Promotional Price</CardTitle>
-                        <CardDescription>Set promotional pricing with start and end dates</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid gap-4 md:grid-cols-3">
-                            <div className="space-y-2">
-                                <Label htmlFor="promotion_price">Promotional Price</Label>
-                                <Input
-                                    id="promotion_price"
-                                    type="number"
-                                    step="0.01"
-                                    value={data.promotion_price}
-                                    onChange={(e) => setData("promotion_price", e.target.value)}
-                                />
-                                <InputError message={errors.promotion_price} />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="starting_date">Promotion Starts</Label>
-                                <DatePicker
-                                    value={data.starting_date || undefined}
-                                    onChange={(date) =>
-                                        setData("starting_date", date ? date.toISOString().split("T")[0] : "")
-                                    }
-                                    placeholder="Select start date"
-                                />
-                                <InputError message={errors.starting_date} />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="last_date">Promotion Ends</Label>
-                                <DatePicker
-                                    value={data.last_date || undefined}
-                                    onChange={(date) =>
-                                        setData("last_date", date ? date.toISOString().split("T")[0] : "")
-                                    }
-                                    placeholder="Select end date"
-                                    fromDate={data.starting_date ? new Date(data.starting_date) : undefined}
-                                />
-                                <InputError message={errors.last_date} />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            {/* Product Details */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Additional Information</CardTitle>
-                    <CardDescription>Add product details and description</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-2">
-                        <Label htmlFor="product_details">Product Details</Label>
-                        <Textarea
-                            id="product_details"
-                            value={data.product_details}
-                            onChange={(e) => setData("product_details", e.target.value)}
-                            rows={4}
-                        />
-                        <InputError message={errors.product_details} />
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Custom Fields */}
+            {/* 19. Custom Fields */}
             {customFields.length > 0 && (
                 <Card>
                     <CardHeader>
@@ -1161,6 +883,359 @@ export function ProductForm({
                     </CardContent>
                 </Card>
             )}
+
+            {/* 20-21. Product Options - Featured & Embedded */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Product Options</CardTitle>
+                    <CardDescription>Configure additional product settings</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-3">
+                        {/* 20. Featured */}
+                        <div className="flex items-center space-x-2">
+                            <Checkbox
+                                id="featured"
+                                checked={data.featured}
+                                onCheckedChange={(checked) => setData("featured", checked as boolean)}
+                            />
+                            <Label htmlFor="featured" className="cursor-pointer">
+                                Featured
+                            </Label>
+                            <p className="text-xs text-muted-foreground">
+                                Featured product will be displayed in POS
+                            </p>
+                        </div>
+
+                        {/* 21. Embedded Barcode */}
+                        <div className="flex items-center space-x-2">
+                            <Checkbox
+                                id="is_embeded"
+                                checked={data.is_embeded}
+                                onCheckedChange={(checked) => setData("is_embeded", checked as boolean)}
+                            />
+                            <Label htmlFor="is_embeded" className="cursor-pointer">
+                                Embedded Barcode
+                            </Label>
+                            <p className="text-xs text-muted-foreground">
+                                Check this if this product will be used in weight scale machine
+                            </p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* 22. Initial Stock Section */}
+            {data.type === "standard" && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Initial Stock</CardTitle>
+                        <CardDescription>Set initial stock quantities for warehouses</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex items-center space-x-2 mb-4">
+                            <Checkbox
+                                id="is_initial_stock"
+                                checked={isInitialStock}
+                                onCheckedChange={(checked) => setIsInitialStock(checked as boolean)}
+                            />
+                            <Label htmlFor="is_initial_stock" className="cursor-pointer">
+                                Initial Stock
+                            </Label>
+                            <p className="text-xs text-muted-foreground">
+                                This feature will not work for product with variants and batches
+                            </p>
+                        </div>
+                        {isInitialStock && !isVariant && !data.is_batch && (
+                            <div className="space-y-2">
+                                {initialStocks.map((stock, index) => (
+                                    <div key={index} className="flex gap-2 items-end">
+                                        <div className="flex-1">
+                                            <Label>
+                                                {warehouses.find((w) => w.id.toString() === stock.warehouse_id)?.name}
+                                            </Label>
+                                        </div>
+                                        <div className="w-48 space-y-2">
+                                            <Label>Quantity</Label>
+                                            <Input
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                value={stock.qty}
+                                                onChange={(e) => {
+                                                    const updated = [...initialStocks]
+                                                    updated[index].qty = e.target.value
+                                                    setInitialStocks(updated)
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* 23. Product Image */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Product Image</CardTitle>
+                    <CardDescription>Upload product images (You can upload multiple images. Only jpeg, jpg, png, gif file can be uploaded. First image will be base image)</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-2">
+                        <Label htmlFor="image">Product Image</Label>
+                        <Input
+                            id="image"
+                            type="file"
+                            multiple
+                            accept="image/jpeg,image/jpg,image/png,image/gif"
+                            onChange={(e) => {
+                                const files = Array.from(e.target.files || [])
+                                if (files.length > 0) {
+                                    // Handle file upload - will be processed in form submission
+                                    const fileInput = e.target as HTMLInputElement
+                                    if (fileInput.files) {
+                                        // Store files in a way that can be accessed during submission
+                                        // For now, we'll handle this in the submit handler
+                                    }
+                                }
+                            }}
+                        />
+                        <InputError message={errors.image} />
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* 24. Product Details */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Product Details</CardTitle>
+                    <CardDescription>Add product details and description</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-2">
+                        <Label htmlFor="product_details">Product Details</Label>
+                        <Textarea
+                            id="product_details"
+                            value={data.product_details}
+                            onChange={(e) => setData("product_details", e.target.value)}
+                            rows={4}
+                        />
+                        <InputError message={errors.product_details} />
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* 25. Variant Section */}
+            {data.type === "standard" && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Product Variants</CardTitle>
+                        <CardDescription>Configure product variants (e.g., Size, Color)</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex items-center space-x-2 mb-4">
+                            <Checkbox
+                                id="is_variant"
+                                checked={isVariant}
+                                onCheckedChange={(checked) => setIsVariant(checked as boolean)}
+                            />
+                            <Label htmlFor="is_variant" className="cursor-pointer">
+                                This product has variant
+                            </Label>
+                        </div>
+                        {isVariant && (
+                            <>
+                                {variantOptions.map((variant, index) => (
+                                    <div key={index} className="flex gap-2 items-end">
+                                        <div className="flex-1 space-y-2">
+                                            <Label>Option * (e.g., Size, Color)</Label>
+                                            <Input
+                                                value={variant.option}
+                                                onChange={(e) => updateVariantOption(index, "option", e.target.value)}
+                                                placeholder="Size, Color etc"
+                                            />
+                                        </div>
+                                        <div className="flex-1 space-y-2">
+                                            <Label>Value * (comma separated)</Label>
+                                            <Input
+                                                value={variant.value}
+                                                onChange={(e) => updateVariantOption(index, "value", e.target.value)}
+                                                placeholder="Small, Medium, Large"
+                                            />
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => removeVariantOption(index)}
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                ))}
+                                <Button type="button" variant="outline" onClick={addVariantOption}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Add More Variant
+                                </Button>
+                            </>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* 26. Different Prices Section */}
+            {data.type === "standard" && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Different Prices for Warehouses</CardTitle>
+                        <CardDescription>Set different prices for different warehouses</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex items-center space-x-2 mb-4">
+                            <Checkbox
+                                id="is_diffPrice"
+                                checked={isDiffPrice}
+                                onCheckedChange={(checked) => setIsDiffPrice(checked as boolean)}
+                            />
+                            <Label htmlFor="is_diffPrice" className="cursor-pointer">
+                                This product has different price for different warehouse
+                            </Label>
+                        </div>
+                        {isDiffPrice && (
+                            <div className="space-y-2">
+                                {diffPrices.map((diffPrice, index) => (
+                                    <div key={index} className="flex gap-2 items-end">
+                                        <div className="flex-1">
+                                            <Label>
+                                                {warehouses.find((w) => w.id.toString() === diffPrice.warehouse_id)?.name}
+                                            </Label>
+                                        </div>
+                                        <div className="w-48 space-y-2">
+                                            <Label>Price</Label>
+                                            <Input
+                                                type="number"
+                                                step="0.01"
+                                                value={diffPrice.price}
+                                                onChange={(e) => {
+                                                    const updated = [...diffPrices]
+                                                    updated[index].price = e.target.value
+                                                    setDiffPrices(updated)
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* 27. Batch Option */}
+            {data.type === "standard" && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Batch & Expiry</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex items-center space-x-2">
+                            <Checkbox
+                                id="is_batch"
+                                checked={data.is_batch}
+                                onCheckedChange={(checked) => setData("is_batch", checked as boolean)}
+                            />
+                            <Label htmlFor="is_batch" className="cursor-pointer">
+                                This product has batch and expired date
+                            </Label>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* 28. IMEI Option */}
+            {data.type === "standard" && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>IMEI / Serial Numbers</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex items-center space-x-2">
+                            <Checkbox
+                                id="is_imei"
+                                checked={data.is_imei}
+                                onCheckedChange={(checked) => setData("is_imei", checked as boolean)}
+                            />
+                            <Label htmlFor="is_imei" className="cursor-pointer">
+                                This product has IMEI or Serial numbers
+                            </Label>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* 29. Promotion Section */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Promotional Price</CardTitle>
+                    <CardDescription>Set promotional pricing with start and end dates</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-center space-x-2 mb-4">
+                        <Checkbox
+                            id="promotion"
+                            checked={isPromotion}
+                            onCheckedChange={(checked) => setIsPromotion(checked as boolean)}
+                        />
+                        <Label htmlFor="promotion" className="cursor-pointer">
+                            Add Promotional Price
+                        </Label>
+                    </div>
+                    {isPromotion && (
+                        <div className="grid gap-4 md:grid-cols-3">
+                            <div className="space-y-2">
+                                <Label htmlFor="promotion_price">Promotional Price</Label>
+                                <Input
+                                    id="promotion_price"
+                                    type="number"
+                                    step="0.01"
+                                    value={data.promotion_price}
+                                    onChange={(e) => setData("promotion_price", e.target.value)}
+                                />
+                                <InputError message={errors.promotion_price} />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="starting_date">Promotion Starts</Label>
+                                <DatePicker
+                                    value={data.starting_date || undefined}
+                                    onChange={(date) =>
+                                        setData("starting_date", date ? date.toISOString().split("T")[0] : "")
+                                    }
+                                    placeholder="Select start date"
+                                />
+                                <InputError message={errors.starting_date} />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="last_date">Promotion Ends</Label>
+                                <DatePicker
+                                    value={data.last_date || undefined}
+                                    onChange={(date) =>
+                                        setData("last_date", date ? date.toISOString().split("T")[0] : "")
+                                    }
+                                    placeholder="Select end date"
+                                    fromDate={data.starting_date ? new Date(data.starting_date) : undefined}
+                                />
+                                <InputError message={errors.last_date} />
+                            </div>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
 
             {showActions && (
                 <div className="flex justify-end gap-4">

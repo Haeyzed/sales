@@ -64,44 +64,20 @@ class ProductController extends Controller
      */
     public function productData(Request $request): JsonResponse
     {
-        $filters = [
-            'warehouse_id' => $request->input('warehouse_id', 0),
-            'search' => $request->input('search.value'),
-            'sort_by' => $request->input('order.0.column', 'created_at'),
-            'sort_order' => $request->input('order.0.dir', 'desc'),
-        ];
-
-        $perPage = $request->input('length', 15);
-        $products = $this->productService->getPaginatedProducts($filters, $perPage);
-
-        $data = [];
-        foreach ($products->items() as $key => $product) {
-            $qty = $this->productService->getProductQuantity(
-                $product->id,
-                $filters['warehouse_id'] > 0 ? $filters['warehouse_id'] : null
-            );
-
-            $data[] = [
-                'id' => $product->id,
-                'key' => $key,
-                'image' => $product->image ? explode(',', $product->image)[0] : 'zummXD2dvAtI.png',
-                'name' => $product->name,
-                'code' => $product->code,
-                'brand' => $product->brand?->title ?? 'N/A',
-                'category' => $product->category?->name ?? 'N/A',
-                'qty' => $qty,
-                'unit' => $product->unit?->unit_name ?? 'N/A',
-                'price' => (float) $product->price,
-                'cost' => (float) $product->cost,
-                'stock_worth' => number_format($qty * $product->price, 2) . ' / ' . number_format($qty * $product->cost, 2),
-            ];
-        }
+        $data = $this->productService->getPaginatedProducts(
+            (int) $request->input('length', 15),
+            (int) $request->input('start', 0),
+            (int) $request->input('order.0.column'),
+            $request->input('order.0.dir', 'asc'),
+            $request->input('search.value'),
+            (int) $request->input('warehouse_id', 0)
+        );
 
         return response()->json([
             'draw' => (int) $request->input('draw', 1),
-            'recordsTotal' => $products->total(),
-            'recordsFiltered' => $products->total(),
-            'data' => $data,
+            'recordsTotal' => $data['totalData'],
+            'recordsFiltered' => $data['totalFiltered'],
+            'data' => $data['products'],
         ]);
     }
 

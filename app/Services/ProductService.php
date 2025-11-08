@@ -24,46 +24,157 @@ use Illuminate\Support\Facades\DB;
 class ProductService
 {
     /**
-     * Get paginated products with filters.
+     * Get paginated products with filters for DataTable.
      *
-     * @param array<string, mixed> $filters
-     * @param int $perPage
-     * @return LengthAwarePaginator
+     * @param int $length
+     * @param int $start
+     * @param int|null $orderColumn
+     * @param string $orderDir
+     * @param string|null $search
+     * @param int $warehouseId
+     * @return array<string, mixed>
      */
-    public function getPaginatedProducts(array $filters = [], int $perPage = 15): LengthAwarePaginator
+    public function getPaginatedProducts(int $length, int $start, ?int $orderColumn, string $orderDir, ?string $search, int $warehouseId): array
     {
-        $query = Product::with(['category', 'brand', 'unit'])
-            ->where('is_active', true);
+        $columns = [
+            2 => 'name',
+            3 => 'code',
+            4 => 'brand_id',
+            5 => 'category_id',
+            6 => 'qty',
+            7 => 'unit_id',
+            8 => 'price',
+            9 => 'cost',
+            10 => 'stock_worth'
+        ];
 
-        // Filter by warehouse if provided
-        if (isset($filters['warehouse_id']) && $filters['warehouse_id'] > 0) {
-            $warehouseId = (int) $filters['warehouse_id'];
-            $query->whereHas('warehouses', function ($q) use ($warehouseId): void {
-                $q->where('warehouse_id', $warehouseId);
-            });
+        $totalData = Product::where('is_active', true)->count();
+        $totalFiltered = $totalData;
+
+        $limit = $length == -1 ? $totalData : $length;
+        $order = isset($columns[$orderColumn]) ? 'products.' . $columns[$orderColumn] : 'products.name';
+        $dir = $orderDir ?: 'asc';
+
+        // Fetch custom fields for table
+        $customFields = \App\Models\CustomField::where([
+            ['belongs_to', 'product'],
+            ['is_table', true]
+        ])->pluck('name');
+        $fieldNames = [];
+        foreach ($customFields as $fieldName) {
+            $fieldNames[] = str_replace(' ', '_', strtolower($fieldName));
         }
 
-        // Search functionality
-        if (isset($filters['search']) && !empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search): void {
-                $q->where('name', 'LIKE', "%{$search}%")
-                    ->orWhere('code', 'LIKE', "%{$search}%")
-                    ->orWhereHas('category', function ($q) use ($search): void {
-                        $q->where('name', 'LIKE', "%{$search}%");
-                    })
-                    ->orWhereHas('brand', function ($q) use ($search): void {
-                        $q->where('title', 'LIKE', "%{$search}%");
-                    });
-            });
+        if (empty($search)) {
+            $products = Product::with('category', 'brand', 'unit')
+                ->where('is_active', true)
+                ->offset($start)
+                ->limit($limit)
+                ->orderBy($order, $dir)
+                ->get();
+        } else {
+            $q = Product::select('products.*')
+                ->with('category', 'brand', 'unit')
+                ->join('categories', 'products.category_id', '=', 'categories.id')
+                ->leftJoin('product_purchases', 'product_purchases.product_id', '=', 'products.id')
+                ->leftJoin('brands', 'products.brand_id', '=', 'brands.id')
+                ->leftJoin('product_variants', 'products.id', '=', 'product_variants.product_id')
+                ->where([
+                    ['products.name', 'LIKE', "%{$search}%"],
+                    ['products.is_active', true]
+                ])
+                ->orWhere([
+                    ['products.code', 'LIKE', "%{$search}%"],
+                    ['products.is_active', true]
+                ])
+                ->orWhere([
+                    ['product_variants.item_code', 'LIKE', "%{$search}%"],
+                    ['products.is_active', true]
+                ])
+                ->orWhere([
+                    ['categories.name', 'LIKE', "%{$search}%"],
+                    ['categories.is_active', true],
+                    ['products.is_active', true]
+                ])
+                ->orWhere([
+                    ['brands.title', 'LIKE', "%{$search}%"],
+                    ['brands.is_active', true],
+                    ['products.is_active', true]
+                ])
+                ->orWhere([
+                    ['product_purchases.imei_number', 'LIKE', "%{$search}%"],
+                    ['products.is_active', true]
+                ]);
+
+            // Searching with custom field
+            foreach ($fieldNames as $fieldName) {
+                $q = $q->orWhere('products.' . $fieldName, 'LIKE', "%{$search}%");
+            }
+
+            $q = $q->offset($start)
+                ->limit($limit)
+                ->orderBy($order, $dir);
+
+            $products = $q->groupBy('products.id')->get();
+            $totalFiltered = $q->groupBy('products.id')->count();
         }
 
-        // Sort
-        $sortBy = $filters['sort_by'] ?? 'created_at';
-        $sortOrder = $filters['sort_order'] ?? 'desc';
-        $query->orderBy($sortBy, $sortOrder);
+        $data = [];
+        foreach ($products as $key => $product) {
+            $nestedData = [];
+            $nestedData['id'] = $product->id;
+            $nestedData['key'] = $key;
 
-        return $query->paginate($perPage);
+            // Handle image
+            $productImage = explode(',', $product->image ?? '');
+            $productImage = htmlspecialchars($productImage[0] ?? '');
+            if ($productImage && $productImage != 'zummXD2dvAtI.png') {
+                if (file_exists(public_path('images/product/small/' . $productImage))) {
+                    $nestedData['image'] = asset('images/product/small/' . $productImage);
+                } else {
+                    $nestedData['image'] = asset('images/product/' . $productImage);
+                }
+            } else {
+                $nestedData['image'] = asset('images/zummXD2dvAtI.png');
+            }
+
+            $nestedData['name'] = $product->name;
+            $nestedData['code'] = $product->code;
+            $nestedData['brand'] = $product->brand?->title ?? 'N/A';
+            $nestedData['category'] = $product->category?->name ?? 'N/A';
+
+            // Calculate quantity based on warehouse
+            if ($warehouseId > 0 && $product->type == 'standard') {
+                $nestedData['qty'] = ProductWarehouse::where([
+                    ['product_id', $product->id],
+                    ['warehouse_id', $warehouseId]
+                ])->sum('qty');
+            } elseif ($product->type == 'standard') {
+                $nestedData['qty'] = ProductWarehouse::where('product_id', $product->id)->sum('qty');
+            } else {
+                $nestedData['qty'] = $product->qty;
+            }
+
+            $nestedData['unit'] = $product->unit?->unit_name ?? 'N/A';
+            $nestedData['price'] = (float) $product->price;
+            $nestedData['cost'] = (float) $product->cost;
+
+            // Stock worth calculation
+            $nestedData['stockWorth'] = number_format($nestedData['qty'] * $product->price, 2) . ' / ' . number_format($nestedData['qty'] * $product->cost, 2);
+
+            // Fetching custom fields data
+            foreach ($fieldNames as $fieldName) {
+                $nestedData[$fieldName] = $product->$fieldName ?? '';
+            }
+
+            $data[] = $nestedData;
+        }
+
+        return [
+            'products' => $data,
+            'totalData' => $totalData,
+            'totalFiltered' => $totalFiltered,
+        ];
     }
 
     /**
