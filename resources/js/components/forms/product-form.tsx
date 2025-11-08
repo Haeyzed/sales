@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useForm } from "@inertiajs/react"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -285,7 +286,7 @@ export function ProductForm({
     }
 
     return (
-        <form onSubmit={handleSubmit} className={className}>
+        <form onSubmit={handleSubmit} className={cn("space-y-6", className)}>
             {/* Basic Information */}
             <Card>
                 <CardHeader>

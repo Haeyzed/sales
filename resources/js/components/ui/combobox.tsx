@@ -64,7 +64,18 @@ export function Combobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
-        <Command>
+        <Command 
+          shouldFilter={true} 
+          filter={(value, search) => {
+            // Custom filter to search by label instead of value
+            // value here is the CommandItem's value (which we set to label)
+            // search is the user's search input
+            if (!search) return 1
+            const searchLower = search.toLowerCase()
+            const valueLower = value.toLowerCase()
+            return valueLower.includes(searchLower) ? 1 : 0
+          }}
+        >
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
             <CommandEmpty>{emptyText}</CommandEmpty>
@@ -72,9 +83,13 @@ export function Combobox({
               {options.map((option) => (
                 <CommandItem
                   key={option.value}
-                  value={option.value}
-                  onSelect={() => {
-                    onValueChange?.(option.value === value ? "" : option.value)
+                  value={option.label}
+                  onSelect={(currentValue) => {
+                    // Find the option by matching the label
+                    const selectedOption = options.find(opt => opt.label === currentValue)
+                    if (selectedOption) {
+                      onValueChange?.(selectedOption.value === value ? "" : selectedOption.value)
+                    }
                     setOpen(false)
                   }}
                 >
