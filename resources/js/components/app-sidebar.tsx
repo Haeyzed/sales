@@ -47,11 +47,11 @@ const mainNavItems: MainNavItem[] = [
         subItems: [
             {
                 title: "Category",
-                href: "#",
+                href: "/categories",
             },
             {
                 title: "Product List",
-                href: products(),
+                href: "/products",
             },
             {
                 title: "Add Product",

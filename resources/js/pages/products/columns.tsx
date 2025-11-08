@@ -1,7 +1,8 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, Eye, Edit, Trash2 } from 'lucide-react';
+import { router } from '@inertiajs/react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -14,14 +15,20 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DataTableColumnHeader } from '@/components/data-table-column-header';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
 export type Product = {
-    id: string;
-    amount: number;
-    status: 'pending' | 'processing' | 'success' | 'failed';
-    email: string;
+    id: number;
+    image: string;
+    name: string;
+    code: string;
+    brand: string;
+    category: string;
+    qty: number;
+    unit: string;
+    price: number;
+    cost: number;
+    stock_worth: string;
 };
 
 export const columns: ColumnDef<Product>[] = [
@@ -50,32 +57,97 @@ export const columns: ColumnDef<Product>[] = [
         enableHiding: false,
     },
     {
-        accessorKey: 'status',
-        header: 'Status',
+        accessorKey: 'name',
+        header: ({ column }) => (
+            <DataTableColumnHeader column={column} title="Product" />
+        ),
+        cell: ({ row }) => {
+            const product = row.original;
+            const imageUrl = product.image && product.image !== 'zummXD2dvAtI.png'
+                ? `/images/product/small/${product.image}`
+                : '/images/zummXD2dvAtI.png';
+
+            return (
+                <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                        <AvatarImage src={imageUrl} alt={product.name} />
+                        <AvatarFallback>{product.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium">{product.name}</span>
+                </div>
+            );
+        },
     },
     {
-        accessorKey: 'email',
+        accessorKey: 'code',
         header: ({ column }) => (
-            <DataTableColumnHeader column={column} title="Email" />
+            <DataTableColumnHeader column={column} title="Code" />
         ),
     },
     {
-        accessorKey: 'amount',
-        header: () => <div className="text-right">Amount</div>,
+        accessorKey: 'brand',
+        header: ({ column }) => (
+            <DataTableColumnHeader column={column} title="Brand" />
+        ),
+    },
+    {
+        accessorKey: 'category',
+        header: ({ column }) => (
+            <DataTableColumnHeader column={column} title="Category" />
+        ),
+    },
+    {
+        accessorKey: 'qty',
+        header: ({ column }) => (
+            <DataTableColumnHeader column={column} title="Quantity" />
+        ),
         cell: ({ row }) => {
-            const amount = parseFloat(row.getValue('amount'));
+            const qty = parseFloat(row.getValue('qty'));
+            const unit = row.original.unit;
+            return (
+                <div className="text-right font-medium">
+                    {qty.toFixed(2)} {unit}
+                </div>
+            );
+        },
+    },
+    {
+        accessorKey: 'price',
+        header: () => <div className="text-right">Price</div>,
+        cell: ({ row }) => {
+            const price = parseFloat(row.getValue('price'));
             const formatted = new Intl.NumberFormat('en-US', {
                 style: 'currency',
                 currency: 'USD',
-            }).format(amount);
+            }).format(price);
 
             return <div className="text-right font-medium">{formatted}</div>;
         },
     },
     {
+        accessorKey: 'cost',
+        header: () => <div className="text-right">Cost</div>,
+        cell: ({ row }) => {
+            const cost = parseFloat(row.getValue('cost'));
+            const formatted = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+            }).format(cost);
+
+            return <div className="text-right font-medium">{formatted}</div>;
+        },
+    },
+    {
+        accessorKey: 'stock_worth',
+        header: () => <div className="text-right">Stock Worth</div>,
+        cell: ({ row }) => {
+            return <div className="text-right text-sm text-muted-foreground">{row.getValue('stock_worth')}</div>;
+        },
+    },
+    {
         id: 'actions',
         cell: ({ row }) => {
-            const payment = row.original;
+            const product = row.original;
 
             return (
                 <DropdownMenu>
@@ -88,16 +160,32 @@ export const columns: ColumnDef<Product>[] = [
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem
-                            onClick={() =>
-                                navigator.clipboard.writeText(payment.id)
-                            }
+                            onClick={() => {
+                                // View product
+                            }}
                         >
-                            Copy payment ID
+                            <Eye className="mr-2 h-4 w-4" />
+                            View
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>View customer</DropdownMenuItem>
-                        <DropdownMenuItem>
-                            View payment details
+                        <DropdownMenuItem
+                            onClick={() => {
+                                router.visit(`/products/${product.id}/edit`);
+                            }}
+                        >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            onClick={() => {
+                                if (confirm('Are you sure you want to delete this product?')) {
+                                    router.delete(`/products/${product.id}`);
+                                }
+                            }}
+                            className="text-red-600"
+                        >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

@@ -8,13 +8,16 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('products', function () {
-        return Inertia::render('products/products');
-    })->name('products');
+    // Product routes
+    Route::get('products/generate-code', [\App\Http\Controllers\ProductController::class, 'generateCode'])->name('products.generate-code');
+    Route::get('products/data', [\App\Http\Controllers\ProductController::class, 'productData'])->name('products.data');
+    Route::resource('products', \App\Http\Controllers\ProductController::class);
+
+    // Category routes
+    Route::get('categories/data', [\App\Http\Controllers\CategoryController::class, 'categoryData'])->name('categories.data');
+    Route::resource('categories', \App\Http\Controllers\CategoryController::class);
 });
 
 require __DIR__.'/settings.php';
