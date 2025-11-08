@@ -391,41 +391,63 @@ class ProductService
     }
 
     /**
-     * Get products for dropdown/select.
+     * Get products without variant for dropdown/select.
      *
-     * @param bool $withVariant
      * @return Collection
      */
-    public function getProductsForSelect(bool $withVariant = false): Collection
+    public function getProductsWithoutVariant(): Collection
     {
-        $query = Product::where('is_active', true)
-            ->select('id', 'name', 'code', 'type', 'is_variant');
+        return Product::where('is_active', true)
+            ->where('type', 'standard')
+            ->where(function ($query) {
+                $query->whereNull('is_variant')
+                    ->orWhere('is_variant', false);
+            })
+            ->select('id', 'name', 'code')
+            ->get();
+    }
 
-        if (!$withVariant) {
-            $query->where('is_variant', false);
-        }
-
-        return $query->get();
+    /**
+     * Get products with variant for dropdown/select.
+     *
+     * @return Collection
+     */
+    public function getProductsWithVariant(): Collection
+    {
+        return Product::join('product_variants', 'products.id', '=', 'product_variants.product_id')
+            ->where('products.is_active', true)
+            ->where('products.type', 'standard')
+            ->whereNotNull('products.is_variant')
+            ->select('products.id', 'products.name', 'product_variants.item_code as code', 'product_variants.qty')
+            ->orderBy('product_variants.position')
+            ->get();
     }
 
     /**
      * Get data for product creation/edit form.
      *
+     * @param Product|null $product
      * @return array<string, mixed>
      */
-    public function getFormData(): array
+    public function getFormData(?Product $product = null): array
     {
-        return [
+        $formData = [
             'brands' => Brand::where('is_active', true)->get(),
             'categories' => Category::where('is_active', true)->get(),
             'units' => Unit::where('is_active', true)->get(),
             'taxes' => Tax::where('is_active', true)->get(),
             'warehouses' => Warehouse::where('is_active', true)->get(),
-            'productsWithoutVariant' => $this->getProductsForSelect(false),
-            'productsWithVariant' => $this->getProductsForSelect(true),
+            'productsWithoutVariant' => $this->getProductsWithoutVariant(),
+            'productsWithVariant' => $this->getProductsWithVariant(),
             'customFields' => CustomField::where('belongs_to', 'product')->get(),
             'numberOfProducts' => Product::where('is_active', true)->count(),
         ];
+
+        if ($product) {
+            $formData['product'] = $product;
+        }
+
+        return $formData;
     }
 
     /**

@@ -168,8 +168,7 @@ class ProductController extends Controller
             abort(404, 'Product not found');
         }
 
-        $formData = $this->productService->getFormData();
-        $formData['product'] = $product;
+        $formData = $this->productService->getFormData($product);
 
         return Inertia::render('products/edit', $formData);
     }

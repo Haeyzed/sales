@@ -544,7 +544,7 @@ const mainNavItems: MainNavItem[] = [
             },
             {
                 title: "Brand",
-                href: "#",
+                href: "/settings/brands",
             },
             {
                 title: "Unit",

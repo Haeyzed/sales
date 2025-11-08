@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { TiptapEditor } from "@/components/ui/tiptap-editor"
 import { Combobox } from "@/components/ui/combobox"
 import { DatePicker } from "@/components/ui/date-picker"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -31,6 +32,7 @@ import {
     ResponsiveDialogClose,
 } from "@/components/ui/responsive-dialog"
 import { CategoryForm } from "./category-form"
+import { BrandForm } from "./brand-form"
 
 interface ProductFormProps {
     initialData?: {
@@ -285,6 +287,46 @@ export function ProductForm({
         }
     }
 
+    const handleBrandSubmit = async (brandData: Record<string, unknown>) => {
+        try {
+            const formData = new FormData()
+            formData.append('title', brandData.title as string)
+            if (brandData.image) {
+                formData.append('image', brandData.image as File)
+            }
+            if (brandData.page_title) {
+                formData.append('page_title', brandData.page_title as string)
+            }
+            if (brandData.short_description) {
+                formData.append('short_description', brandData.short_description as string)
+            }
+
+            const response = await fetch('/brand', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+
+            if (response.ok) {
+                const newBrand = await response.json()
+                setBrandDialogOpen(false)
+                // Update the selected brand
+                if (newBrand.id) {
+                    setData('brand_id', newBrand.id.toString())
+                }
+                // Reload brands list - the brands will be refreshed when the page reloads
+                // For now, we'll just close the dialog and let the parent handle refresh
+            } else {
+                const errorData = await response.json()
+                console.error('Error creating brand:', errorData)
+            }
+        } catch (error) {
+            console.error('Error creating brand:', error)
+        }
+    }
+
     return (
         <form onSubmit={handleSubmit} className={cn("space-y-6", className)}>
             {/* Basic Information */}
@@ -406,14 +448,32 @@ export function ProductForm({
                                             <ResponsiveDialogTitle>Add Brand</ResponsiveDialogTitle>
                                             <ResponsiveDialogDescription>Create a new brand</ResponsiveDialogDescription>
                                         </ResponsiveDialogHeader>
-                                        {/* Brand form will be added here */}
+                                        <div className="space-y-4">
+                                            <BrandForm
+                                                onSubmit={handleBrandSubmit}
+                                                onCancel={() => setBrandDialogOpen(false)}
+                                                showActions={false}
+                                                className="brand-form-in-dialog"
+                                            />
+                                        </div>
                                         <ResponsiveDialogFooter>
                                             <ResponsiveDialogClose asChild>
                                                 <Button type="button" variant="outline">
                                                     Cancel
                                                 </Button>
                                             </ResponsiveDialogClose>
-                                            <Button type="button">Add Brand</Button>
+                                            <Button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.preventDefault()
+                                                    const form = document.querySelector('.brand-form-in-dialog form') as HTMLFormElement
+                                                    if (form) {
+                                                        form.requestSubmit()
+                                                    }
+                                                }}
+                                            >
+                                                Add Brand
+                                            </Button>
                                         </ResponsiveDialogFooter>
                                     </ResponsiveDialogContent>
                                 </ResponsiveDialog>
@@ -1018,11 +1078,10 @@ export function ProductForm({
                 <CardContent>
                     <div className="space-y-2">
                         <Label htmlFor="product_details">Product Details</Label>
-                        <Textarea
-                            id="product_details"
+                        <TiptapEditor
                             value={data.product_details}
-                            onChange={(e) => setData("product_details", e.target.value)}
-                            rows={4}
+                            onChange={(value) => setData("product_details", value)}
+                            placeholder="Enter product details..."
                         />
                         <InputError message={errors.product_details} />
                     </div>

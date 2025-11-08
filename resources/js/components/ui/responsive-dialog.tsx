@@ -1,5 +1,6 @@
 import * as React from "react"
 import { useMediaQuery } from "@/hooks/use-media-query"
+import { cn } from "@/lib/utils"
 import {
   Dialog,
   DialogContent,
@@ -137,10 +138,19 @@ export function ResponsiveDialogFooter({ children, className }: ResponsiveDialog
   const { isDesktop } = React.useContext(ResponsiveDialogContext)
 
   if (isDesktop) {
-    return <div className={className}>{children}</div>
+    return (
+      <div
+        className={cn(
+          "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
+          className
+        )}
+      >
+        {children}
+      </div>
+    )
   }
 
-  return <div className={className}>{children}</div>
+  return <div className={cn("mt-auto flex flex-col gap-2 p-4", className)}>{children}</div>
 }
 
 export function ResponsiveDialogClose({ children, asChild }: ResponsiveDialogCloseProps) {
